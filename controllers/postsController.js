@@ -52,8 +52,28 @@ function show(req, res) {
             return res.status(404).json({ error: 'Element not found' });
         }
 
-        // risposta positiva
-        res.json(results[0]);
+        // Dichiarazione variabile per il post individuato (OBJECT)
+        // Dichiarandola all'interno della CRUD, potrò usarla nell'SQL nested che richiama i TAGS.
+        let post = results[0];
+
+        //**************************************************************************TAGS
+        // Dichiarazione SQL QUERY (tags)
+        const tagsSql = 'SELECT `tags`.* FROM `blog`.`tags` JOIN `blog`.`post_tag` ON `tags`.`id` = `post_tag`.`tag_id` WHERE `post_tag`.`tag_id` = ?';
+
+        // Utilizzo della QUERY (tags)
+        connection.query(tagsSql, [id], (err, results) => {
+            // Gestione dell'ERRORE
+            if (err) {
+                console.log(err);
+                return res.status(500).json({ error: 'Database query failed' });
+            }
+
+            post.tags = results;
+
+            // risposta positiva
+            // NOTA: la risposta dell'intera CRUD viene in questo caso spostata nella QUERY SQL nested, perchè essendo le due funzioni asincrone altrimenti non vedrei i TAGS che ho aggiunto. In questo modo invece aggiungo la PROPERTY all'OBJECT "post" contenente i TAGS.
+            res.json(post);
+        })
     })
 }
 
