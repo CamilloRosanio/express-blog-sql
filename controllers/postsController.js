@@ -1,11 +1,3 @@
-// Dichiarazione dei REQUIRE delle risorse
-const postsData = require('../data/posts.js');
-const port = process.env.PORT;
-const host = process.env.HOST;
-const folderPath = `/img/`;
-const finalPath = `${host}:${port}${folderPath}`;
-
-
 // DICHIARAZIONE DELLA CONNECTION AL DB SQL
 const connection = require('../db/connection');
 
@@ -100,132 +92,36 @@ function store(req, res) {
 
 // update
 function update(req, res) {
-
-    // logica
-    const id = parseInt(req.params.id);
-    let foundElement = postsData.find(post => post.id == id);
-
-    // gestione errore (MANUALE e singola solo per questa ROUTE)
-    // if(!foundElement) {
-    //     return res.status(404).json('Element not found');  
-    // }
-
-    // gestione errore centralizzata tramite MIDDLEWARE
-    if (!foundElement) {
-        const err = new Error('Element not found');
-        err.code = 404;
-        throw err;
-    }
-
-    // Recupero i dati dalla richiesta PUT
-    const { title, content, img, tags, category, published } = req.body;
-
-    // gestione errore
-    // if (
-    //     !title ||
-    //     !content ||
-    //     !img ||
-    //     !tags ||
-    //     !Array.isArray(tags) ||
-    //     !tags?.length
-    // ) {
-    //     // gestione errore (MANUALE e singola solo per questa ROUTE)
-    //     // return res.status(400).json(`Missing or wrong format values`);
-
-    //     // gestione errore centralizzata tramite MIDDLEWARE
-    //     const err = new Error('Missing or wrong format values');
-    //     err.code = 400;
-    //     throw err;
-    // }
-
-    // logica
-    foundElement.title = title;
-    foundElement.content = content;
-    foundElement.img = finalPath + img;
-    foundElement.tags = tags;
-    foundElement.category = category;
-    foundElement.published = published;
-
-    // risposta positiva
-    res.json(foundElement);
+    console.log('CRUD Update: work in progress');
 }
 
 // modify
 function modify(req, res) {
-
-    // logica
-    const id = parseInt(req.params.id);
-    let foundElement = postsData.find(post => post.id == id);
-
-    // gestione errore (MANUALE e singola solo per questa ROUTE)
-    // if(!foundElement) {
-    //     return res.status(404).json('Element not found');  
-    // }
-
-    // gestione errore centralizzata tramite MIDDLEWARE
-    if (!foundElement) {
-        const err = new Error('Element not found');
-        err.code = 404;
-        throw err;
-    }
-
-    // Recupero i dati dalla richiesta PUT
-    const { title, content, img, tags, category, published } = req.body;
-
-    // gestione errore
-    // if (tags) {
-    //     if (!Array.isArray(tags) || !tags?.length) {
-
-    //         //gestione errore (MANUALE e singola solo per questa ROUTE)
-    //         // return res.status(400).json(`Missing or wrong format values`);
-
-    //         // gestione errore centralizzata tramite MIDDLEWARE
-    //         const err = new Error('Missing or wrong format values');
-    //         err.code = 400;
-    //         throw err;
-    //     }
-    // }
-
-    // logica
-    if (title) foundElement.title = title;
-    if (content) foundElement.content = content;
-    if (img) foundElement.img = finalPath + img;
-    if (tags) foundElement.tags = tags;
-    if (category) foundElement.category = category;
-    if (published) foundElement.published = published;
-
-    // risposta positiva
-    res.json(foundElement);
+    console.log('CRUD Modify: work in progress');
 }
 
 // destroy
 function destroy(req, res) {
 
-    // logica
+    // Estrazione ID dall'URL
     const id = parseInt(req.params.id);
-    let foundElement = postsData.find((post, index) => post.id == id);
-    let deleteIndex = postsData.indexOf(foundElement);
 
-    // gestione errore (MANUALE e singola solo per questa ROUTE)
-    // if(!foundElement) {
-    //     return res.status(404).json('Element not found');  
-    // }
+    // Dichiarazione SQL QUERY
+    const postsSql = 'DELETE FROM `blog`.`posts` WHERE `posts`.`id` = ?';
 
-    // gestione errore centralizzata tramite MIDDLEWARE
-    if (!foundElement) {
-        const err = new Error('Element not found');
-        err.code = 404;
-        throw err;
-    }
+    // Utilizzo della QUERY
+    connection.query(postsSql, [id], (err) => {
 
-    // logica
-    postsData.splice(deleteIndex, 1);
+        // Gestione dell'ERRORE
+        // Errore nella QUERY
+        if (err) {
+            console.log(err);
+            return res.status(500).json({ error: 'Database query failed' });
+        }
 
-    // risposta positiva
-    res.json({
-        foundPosts: postsData.length,
-        posts: postsData,
-    });
+        // risposta positiva
+        res.sendStatus(204);
+    })
 }
 
 
