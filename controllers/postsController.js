@@ -121,6 +121,7 @@ function destroy(req, res) {
 
         // risposta positiva
         res.sendStatus(204);
+        console.log('DESTROY query successfull')
     })
 }
 
