@@ -13,6 +13,7 @@ const mysql = require('mysql2');
 const connection = mysql.createConnection({
 
     // Queste sono le credenziali impostate quando ho creato la connessione al Server su mySQL Workbench.
+    // NOTA: queste credenziali sono definite nel ".env", ma in questo caso le passo in chiaro per permettere la correzione dell'esercizio.
     host: 'localhost',
     user: 'root',
     password: 'password',
@@ -22,7 +23,7 @@ const connection = mysql.createConnection({
 // AVVIO LA CONNESSIONE
 connection.connect((err) => {
     if (err) throw err;
-    console.log('Connected to MySQL: blog_db');
+    console.log('Connected to MySQL Database: [blog]');
 });
 
 

@@ -14,66 +14,59 @@ const connection = require('../db/connection');
 // index
 function index(req, res) {
 
-    // logica
-    const term = req.query.term ?? '';
+    // Dichiarazione SQL QUERY
+    const postsSql = 'SELECT * FROM `blog`.`posts`';
 
-    let filteredArray = postsData.filter((element) => {
+    // Utilizzo della QUERY
+    connection.query(postsSql, (err, results) => {
 
-        // query TITLE
-        const titleIncludesTerm = element.title.toLowerCase().includes(term.toLowerCase());
-        // query CONTENT
-        const contentIncludesTerm = element.content.toLowerCase().includes(term.toLowerCase());
-
-        // query TAGS
-        let tagsIncludesTerm = false;
-
-        element.tags.forEach((tag) => {
-            if (tag.toLowerCase().includes(term.toLowerCase())) tagsIncludesTerm = true;
-        })
-
-        return titleIncludesTerm || contentIncludesTerm || tagsIncludesTerm;
-    })
-
-    // Mapping dinamico e centralizzato del PATH delle immagini (.img in questo caso)
-    postsData.forEach(element => {
-        if (!element.img.includes(finalPath)) {
-            filteredArray.map(element => element.img = finalPath + element.img);
+        // Gestione dell'ERRORE
+        if (err) {
+            // Riporto in Console l'errore con i dettagli, così oltre al messaggio di risposta so anche il perchè la query abbia fallito.
+            console.log(err);
+            return res.status(500).json({ error: 'Database query failed' });
         }
-    })
 
-    // risposta positiva
-    res.json({
-        foundElements: filteredArray.length,
-        elements: filteredArray,
-    });
+        // risposta positiva
+        res.json(results);
+    })
 }
 
 // show
 function show(req, res) {
 
-    // logica
+    // Estrazione ID dall'URL
     const id = parseInt(req.params.id);
-    let foundElement = postsData.find(post => post.id == id);
 
-    // gestione errore (MANUALE e singola solo per questa ROUTE)
-    // if(!foundElement) {
-    //     return res.status(404).json('Element not found');  
-    // }
+    // Dichiarazione SQL QUERY
+    // NOTA: per evitare "SQL INJECTIONS" di malitenzionati, invece del valore dell'id, uso "?", e passo l'id reale successivamente come parametro.
+    const postsSql = 'SELECT * FROM `blog`.`posts` WHERE `posts`.`id` = ?';
 
-    // gestione errore centralizzata tramite MIDDLEWARE
-    if (!foundElement) {
-        const err = new Error('Element not found');
-        err.code = 404;
-        throw err;
-    }
+    // Utilizzo della QUERY
+    // Qui passo anche "id", che sostituirà "?" nella QUERY dandoci il risultato richiesto.
+    // Si possono usare anche più paramentri, che saranno sostituiti come segue: il primo "?" sarà sostituito dal primo elemento dell'ARRAY di parametri che passo; il secondo "?" rispettivamente dal secondo e così via.
+    connection.query(postsSql, [id], (err, results) => {
 
-    // Mapping dinamico e centralizzato del PATH dell'immagine'
-    if (!foundElement.img.includes(finalPath)) {
-        foundElement.img = finalPath + foundElement.img;
-    }
+        // Gestione dell'ERRORE
+        // Errore nella QUERY
+        if (err) {
+            // Riporto in Console l'errore con i dettagli, così oltre al messaggio di risposta so anche il perchè la query abbia fallito.
+            console.log(err);
+            return res.status(500).json({ error: 'Database query failed' });
+        }
 
-    // risposta positiva
-    res.json(foundElement);
+        // gestione Gestione dell'ERRORE
+        // 404 (not found) centralizzata tramite MIDDLEWARE
+        if (results.lenght === 0) {
+            console.log(err);
+            return res.status(404).json({ error: 'Element not found' });
+        }
+
+        // risposta positiva
+        res.json(results[0]);
+    })
+
+
 }
 
 // store
