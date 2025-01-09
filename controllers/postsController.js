@@ -6,6 +6,10 @@ const folderPath = `/img/`;
 const finalPath = `${host}:${port}${folderPath}`;
 
 
+// DICHIARAZIONE DELLA CONNECTION AL DB SQL
+const connection = require('../db/connection');
+
+
 
 // index
 function index(req, res) {
