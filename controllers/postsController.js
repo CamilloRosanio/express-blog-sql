@@ -50,13 +50,11 @@ function show(req, res) {
         // Gestione dell'ERRORE
         // Errore nella QUERY
         if (err) {
-            // Riporto in Console l'errore con i dettagli, così oltre al messaggio di risposta so anche il perchè la query abbia fallito.
             console.log(err);
             return res.status(500).json({ error: 'Database query failed' });
         }
 
         // gestione Gestione dell'ERRORE
-        // 404 (not found) centralizzata tramite MIDDLEWARE
         if (results.lenght === 0) {
             console.log(err);
             return res.status(404).json({ error: 'Element not found' });
@@ -65,8 +63,6 @@ function show(req, res) {
         // risposta positiva
         res.json(results[0]);
     })
-
-
 }
 
 // store
@@ -74,59 +70,32 @@ function store(req, res) {
 
     // recupero le informazioni JSON, su cui essendo un OBJECT posso fare un DESTRUCTURING ricavando solo le proprietà che voglio
     // questo qualora ve ne fossero altre a cui non sono interessato e che non voglio passare
-    const { title, content, img, tags, category, published } = req.body;
+    const { title, content, image } = req.body;
 
-    // gestione errore (MANUALE e singola solo per questa ROUTE)
-    // if (
-    //     !title ||
-    //     !content ||
-    //     !img ||
-    //     !tags ||
-    //     !Array.isArray(tags) ||
-    //     !tags?.length
-    // ) {
-    //     // (gestione errore MANUALE e singola solo per questa ROUTE)
-    //     // return res.status(400).json(`Missing or wrong format values`);
-
-    //     // gestione errore centralizzata tramite MIDDLEWARE
-    //     const err = new Error('Missing or wrong format values');
-    //     err.code = 400;
-    //     throw err;
-    // }
-
-    // generazione ID progressivo (in questo caso numerico) partendo dall'ID dell'ultimo elemento dell'Array
-    // const newId = postsData.at(-1).id + 1;
-
-    // generazione ID progressivo basato sul MAX_ID numerico + 1
-    let generateId = () => {
-        let max = 0;
-
-        postsData.forEach(element => {
-            if (parseInt(element.id) > max) {
-                max = element.id
-            }
-        })
-
-        return max + 1;
+    // Gestione dell'ERRORE
+    // Campi obbligatori mancanti
+    if (!title || !image) {
+        console.log(err);
+        return res.status(403).json({ error: 'Missing mandatory parameters' });
     }
 
-    // creazione di un nuovo OBJECT con nuovo ID
-    const newElement = {
-        id: generateId(),
-        category,
-        title,
-        content,
-        // Mapping del PATH del'immagine
-        img: finalPath + img,
-        tags,
-        published,
-    }
+    // Dichiarazione SQL QUERY
+    const postsSql = 'INSERT INTO `blog`.`posts` (`title`, `content`, `image`) VALUES (?, ?, ?)';
 
-    // PUSH del nuovo elemento nell'Array di Posts
-    postsData.push(newElement);
+    // Utilizzo della QUERY
+    connection.query(postsSql, [title, content, image], (err, results) => {
 
-    // risposta positiva
-    res.json(newElement);
+        // Gestione dell'ERRORE
+        // Errore nella QUERY
+        if (err) {
+            console.log(err);
+            return res.status(500).json({ error: 'Database query failed' });
+        }
+
+        // risposta positiva
+        res.json({ title, content, image });
+    })
+
 }
 
 // update
